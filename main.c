@@ -283,6 +283,7 @@ struct Args {
   unsigned int numWorkers;
   char *output;
   char *includeDir;
+  bool isPsslCompatRequested;
   bool isHelpRequested;
   bool isDebugRequested;
 };
@@ -339,6 +340,9 @@ bool args_parse(Args *out_args, int a_argc, char *a_argv[]) {
     } else if (SDL_strcmp("-g", a_argv[i]) == 0 ||
                SDL_strcmp("--debug", a_argv[i]) == 0) {
       out_args->isDebugRequested = true;
+    } else if (SDL_strcmp("-p", a_argv[i]) == 0 ||
+               SDL_strcmp("--pssl", a_argv[i]) == 0) {
+      out_args->isPsslCompatRequested = true;
     } else if (SDL_strcmp("-o", a_argv[i]) == 0 ||
                SDL_strcmp("--output", a_argv[i]) == 0) {
       if (out_args->output) {
@@ -517,6 +521,9 @@ void args_print_help() {
           "Directory to search for include files.\n");
   SDL_Log("  %-*s %s", column_width, "-D<name>[=<value>]",
           "Define a preprocessor macro. Can be specified multiple times.\n");
+  SDL_Log(
+      "  %-*s %s", column_width, "-p | --pssl",
+      "Generate PSSL-compatible shader. Destination format should be HLSL.");
   SDL_Log("\n");
   SDL_Log("Input files should be of the format: "
           "[<dir>/]<name>(.vert|.frag|.comp)(.spv|.hlsl)\n");
@@ -613,7 +620,11 @@ int compiler_worker(void *ptr) {
         job->data = fileData;
         job->dataSize = fileSize;
       } else if (job->output == SHADER_FORMAT_HLSL) {
-        // TODO: psslCombat
+        if (state->args->isPsslCompatRequested) {
+          SDL_SetBooleanProperty(
+              spirvInfo.props,
+              SDL_SHADERCROSS_PROP_SPIRV_PSSL_COMPATIBILITY_BOOLEAN, true);
+        }
         job->data = SDL_ShaderCross_TranspileHLSLFromSPIRV(&spirvInfo);
       } else if (job->output == SHADER_FORMAT_DXIL) {
         job->data =
@@ -668,7 +679,11 @@ int compiler_worker(void *ptr) {
                                   SDL_SHADERCROSS_PROP_SHADER_DEBUG_NAME_STRING,
                                   job->name);
           }
-          // TODO: psslCombat
+          if (state->args->isPsslCompatRequested) {
+            SDL_SetBooleanProperty(
+                spirvInfo.props,
+                SDL_SHADERCROSS_PROP_SPIRV_PSSL_COMPATIBILITY_BOOLEAN, true);
+          }
           job->data = SDL_ShaderCross_TranspileHLSLFromSPIRV(&spirvInfo);
           SDL_free(spirv);
           SDL_DestroyProperties(spirvInfo.props);
