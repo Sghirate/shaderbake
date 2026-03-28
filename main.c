@@ -283,6 +283,7 @@ struct Args {
   unsigned int numWorkers;
   char *output;
   char *includeDir;
+  char *mslVersion;
   bool isPsslCompatRequested;
   bool isHelpRequested;
   bool isDebugRequested;
@@ -359,6 +360,14 @@ bool args_parse(Args *out_args, int a_argc, char *a_argv[]) {
 #else
         out_args->output = a_argv[i + 1];
 #endif
+      }
+      ++i;
+    } else if (SDL_strcmp("--msl-version", a_argv[i] == 0)) {
+      if (i + 1 >= a_argc) {
+        log_err("%s requires an argument", a_argv[i]);
+        success = false;
+      } else {
+        out_args->mslVersion = a_argv[i + 1];
       }
       ++i;
     } else if (SDL_strcmp("-w", a_argv[i]) == 0 ||
@@ -521,6 +530,9 @@ void args_print_help() {
           "Directory to search for include files.\n");
   SDL_Log("  %-*s %s", column_width, "-D<name>[=<value>]",
           "Define a preprocessor macro. Can be specified multiple times.\n");
+  SDL_Log("  %-*s %s", column_width, "--msl-version <value>",
+          "Target MSL version. Only used when transpiling to MSL. The default "
+          "is 1.2.0.");
   SDL_Log(
       "  %-*s %s", column_width, "-p | --pssl",
       "Generate PSSL-compatible shader. Destination format should be HLSL.");
@@ -630,7 +642,11 @@ int compiler_worker(void *ptr) {
         job->data =
             SDL_ShaderCross_CompileDXILFromSPIRV(&spirvInfo, &job->dataSize);
       } else if (job->output == SHADER_FORMAT_MSL) {
-        // TODO: mslVersion
+        if (state->args->mslVersion) {
+          SDL_SetStringProperty(spirvInfo.props,
+                                SDL_SHADERCROSS_PROP_SPIRV_MSL_VERSION_STRING,
+                                state->args->mslVersion);
+        }
         job->data = SDL_ShaderCross_TranspileMSLFromSPIRV(&spirvInfo);
       } else {
         log_err("Unsupported output format: %s (%u)",
@@ -714,7 +730,11 @@ int compiler_worker(void *ptr) {
                                   SDL_SHADERCROSS_PROP_SHADER_DEBUG_NAME_STRING,
                                   job->name);
           }
-          // TODO: mslVersion
+          if (state->args->mslVersion) {
+            SDL_SetStringProperty(spirvInfo.props,
+                                  SDL_SHADERCROSS_PROP_SPIRV_MSL_VERSION_STRING,
+                                  state->args->mslVersion);
+          }
           job->data = SDL_ShaderCross_TranspileMSLFromSPIRV(&spirvInfo);
           SDL_free(spirv);
           SDL_DestroyProperties(spirvInfo.props);
