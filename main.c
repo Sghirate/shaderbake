@@ -333,13 +333,14 @@ bool args_parse_size(unsigned int *out_value, const char *a_name,
 bool args_parse(Args *out_args, int a_argc, char *a_argv[]) {
   bool success = true;
   for (int i = 1; i < a_argc; ++i) {
-    if (strcmp("-h", a_argv[i]) == 0 || strcmp("--help", a_argv[i]) == 0) {
+    if (SDL_strcmp("-h", a_argv[i]) == 0 ||
+        SDL_strcmp("--help", a_argv[i]) == 0) {
       out_args->isHelpRequested = true;
-    } else if (strcmp("-g", a_argv[i]) == 0 ||
-               strcmp("--debug", a_argv[i]) == 0) {
+    } else if (SDL_strcmp("-g", a_argv[i]) == 0 ||
+               SDL_strcmp("--debug", a_argv[i]) == 0) {
       out_args->isDebugRequested = true;
-    } else if (strcmp("-o", a_argv[i]) == 0 ||
-               strcmp("--output", a_argv[i]) == 0) {
+    } else if (SDL_strcmp("-o", a_argv[i]) == 0 ||
+               SDL_strcmp("--output", a_argv[i]) == 0) {
       if (out_args->output) {
         log_err("Output can only be set once");
         success = false;
@@ -356,8 +357,8 @@ bool args_parse(Args *out_args, int a_argc, char *a_argv[]) {
 #endif
       }
       ++i;
-    } else if (strcmp("-w", a_argv[i]) == 0 ||
-               strcmp("--workers", a_argv[i]) == 0) {
+    } else if (SDL_strcmp("-w", a_argv[i]) == 0 ||
+               SDL_strcmp("--workers", a_argv[i]) == 0) {
       if (out_args->numWorkers != 0) {
         log_err("Workers can only be set once");
         success = false;
@@ -369,8 +370,8 @@ bool args_parse(Args *out_args, int a_argc, char *a_argv[]) {
         success = false;
       }
       ++i;
-    } else if (strcmp("-I", a_argv[i]) == 0 ||
-               strcmp("--include", a_argv[i]) == 0) {
+    } else if (SDL_strcmp("-I", a_argv[i]) == 0 ||
+               SDL_strcmp("--include", a_argv[i]) == 0) {
       if (out_args->includeDir) {
         log_err("Include dir can only be set once");
         success = false;
