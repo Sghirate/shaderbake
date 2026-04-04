@@ -362,7 +362,7 @@ bool args_parse(Args *out_args, int a_argc, char *a_argv[]) {
 #endif
       }
       ++i;
-    } else if (SDL_strcmp("--msl-version", a_argv[i] == 0)) {
+    } else if (SDL_strcmp("--msl-version", a_argv[i]) == 0) {
       if (i + 1 >= a_argc) {
         log_err("%s requires an argument", a_argv[i]);
         success = false;
