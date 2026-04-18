@@ -36,6 +36,7 @@ endif()
 if(NOT TARGET SDL3_shadercross::SDL3_shadercross-static)
   message(STATUS "Getting SDL_shadercross from Github")
   set(SDLSHADERCROSS_VENDORED ON CACHE BOOL "Use vendored dependencies" FORCE)
+  set(SDLSHADERCROSS_STATIC ON CACHE BOOL "" FORCE)
   include_dependency(SDL_shadercross https://github.com/libsdl-org/SDL_shadercross.git main)
 endif()
 
